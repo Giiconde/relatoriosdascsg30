@@ -1,0 +1,107 @@
+<!-- ... existing code ... -->
+    <script>
+        // Data Configuration
+        const defaultSchedule = [
+            { id: '1', time: '08:30 - 10:30', title: 'G30 Pay', type: 'block' },
+            { id: '2', time: '10:30', title: 'Contatos ativos', type: 'milestone' },
+            { id: '3', time: '11:00 - 12:00', title: 'Imersão G30 / Missão descongelamento', type: 'block' },
+            { id: '4', time: '12:00 - 13:00', title: 'Almoço', type: 'break' },
+            { id: '5', time: '13:00 - 13:30', title: 'Contato reativo | Solicitações', type: 'block' },
+            { id: '6', time: '13:30', title: 'POV do Dia', type: 'milestone' },
+            { id: '7', time: '13:45 - 14:45', title: 'Espaço reservado para reuniões / Análise de base', type: 'block' },
+            { id: '8', time: '14:45 - 15:45', title: 'G30 Pay', type: 'block' },
+            { id: '9', time: '15:45 - 16:30', title: 'CRM', type: 'block' },
+            { id: '10', time: '16:30', title: 'Encerramento das janelas', type: 'milestone' },
+        ];
+
+        const giovannaSchedule = [
+            { id: '1', time: '08:30 - 09:30', title: 'Missão descongelamento', type: 'block' },
+            { id: '2', time: '09:30 - 10:00', title: 'Contatos ativos', type: 'block' },
+            { id: '3', time: '10:00 - 12:00', title: 'Imersão', type: 'block' },
+            { id: '4', time: '12:00 - 13:00', title: 'Almoço', type: 'break' },
+            { id: '5', time: '13:00 - 13:15', title: 'POV do Dia', type: 'milestone' },
+            { id: '6', time: '13:15 - 13:45', title: 'Contato Reativo | Solicitações (Cross-sell)', type: 'block' },
+            { id: '7', time: '13:45 - 14:45', title: 'Reservado Reunião / Atividade vinculada (Sessões de Cross-sell)', type: 'block' },
+            { id: '8', time: '14:45 - 15:45', title: 'Missão descongelamento', type: 'block' },
+            { id: '9', time: '15:45 - 16:30', title: 'CRM', type: 'block' },
+            { id: '10', time: '16:30 - 17:00', title: 'Encerramento das Janelas / Envio de relatório diário', type: 'milestone' },
+        ];
+
+        const karineSchedule = [
+            { id: '1', time: '08:30 - 09:00', title: 'Contatos ativos', type: 'block' },
+            { id: '2', time: '09:00 - 10:00', title: 'Missão descongelamento', type: 'block' },
+            { id: '3', time: '10:00 - 10:45', title: 'CRM', type: 'block' },
+            { id: '4', time: '10:45 - 11:00', title: 'POV do dia', type: 'milestone' },
+            { id: '5', time: '11:00 - 12:00', title: 'Imersão', type: 'block' },
+            { id: '6', time: '12:00 - 13:00', title: 'Almoço', type: 'break' },
+            { id: '7', time: '13:30 - 14:30', title: 'Contatos reativos', type: 'block' },
+            { id: '8', time: '14:30 - 15:30', title: 'Reservado Reunião / Atividade vinculada (Sessões de Cross-sell)', type: 'block' },
+            { id: '9', time: '15:30 - 16:30', title: 'Missão descongelamento', type: 'block' },
+            { id: '10', time: '16:30 - 17:00', title: 'Encerramento das Janelas / Envio de relatório diário', type: 'milestone' },
+        ];
+
+        const schedules = {
+            'Beatriz': defaultSchedule,
+            'Giovanna': giovannaSchedule,
+            'Karine': karineSchedule 
+        };
+
+        // Atualização da cor do tema da Karine para Verde Pastel
+        if (typeof themes !== 'undefined') {
+            themes['Karine'] = { color: '#86efac', hover: '#22c55e' };
+        }
+
+        const callObjectives = [
+            'Imersão G30',
+// ... existing code ...
+        function updateTheme() {
+            const name = getCSName();
+            const theme = themes[name] || themes['Beatriz'];
+            document.documentElement.style.setProperty('--theme-color', theme.color);
+            document.documentElement.style.setProperty('--theme-hover', theme.hover);
+            
+            // Controle de aba G30 Pay por usuário
+            const g30Btn = document.getElementById('btn-report-g30');
+            if (name === 'Giovanna' || name === 'Karine') {
+                g30Btn.classList.remove('flex');
+                g30Btn.classList.add('hidden');
+                
+                // Se o usuário estiver na aba do relatório e ele desaparecer, redireciona pro planner
+                if (activeTab === 'report-g30') {
+                    switchTab('planner');
+                }
+            } else {
+                g30Btn.classList.remove('hidden');
+                g30Btn.classList.add('flex');
+            }
+
+            renderSchedule(); // Atualiza a agenda imediatamente ao trocar o nome
+
+            updateReportsIfActive();
+        }
+// ... existing code ...
+        // Render Schedule Blocks
+        function renderSchedule() {
+            const currentName = getCSName();
+            const activeSchedule = schedules[currentName] || defaultSchedule;
+
+            DOM.scheduleContainer.innerHTML = activeSchedule.map(block => {
+                let borderClass = 'border-gray-400 bg-gray-50';
+                if (block.type === 'block') borderClass = 'border-[#a55e9d]';
+                else if (block.type === 'break') borderClass = 'border-pink-200 bg-pink-50';
+                
+                const titleClass = block.type === 'milestone' ? 'text-sm' : 'text-base';
+
+                return `
+                    <div class="p-4 rounded-xl border-l-4 shadow-sm bg-white transition-all ${borderClass}">
+                        <div class="text-xs font-bold text-gray-500 mb-1">${block.time}</div>
+                        <div class="font-medium ${titleClass}">
+                            ${block.title}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Populate Objectives Dropdown
+// ... existing code ...
